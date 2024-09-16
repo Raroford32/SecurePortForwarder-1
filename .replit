@@ -1,0 +1,55 @@
+modules = ["go"]
+
+[nix]
+channel = "stable-24_05"
+
+[workflows]
+runButton = "Project"
+
+[[workflows.workflow]]
+name = "Project"
+mode = "parallel"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Run Server"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Run Client"
+
+[[workflows.workflow]]
+name = "Run Server"
+author = "agent"
+
+[workflows.workflow.metadata]
+agentRequireRestartOnSave = false
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "go run cmd/server/main.go -listen :8000"
+waitForPort = 8000
+
+[[workflows.workflow]]
+name = "Run Client"
+author = "agent"
+
+[workflows.workflow.metadata]
+agentRequireRestartOnSave = false
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "go run cmd/client/main.go -server localhost:8000 -local 8001 -remote 8002"
+waitForPort = 8001
+
+[deployment]
+run = ["sh", "-c", "go run cmd/server/main.go -listen :8000"]
+
+[[ports]]
+localPort = 8000
+externalPort = 80
+
+[[ports]]
+localPort = 8001
+externalPort = 3000
